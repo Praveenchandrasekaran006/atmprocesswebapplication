@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd" id="WebApp_ID" version="4.0">
+  <display-name>atmprocesswebapplication</display-name>
+
+ 	
+ 	<welcome-file-list>
+ 		<welcome-file>index.html</welcome-file>
+ 	</welcome-file-list>
+ 	
+ 	
+ 	<servlet>
+ 		<servlet-name>loadcashatm</servlet-name>
+ 		<servlet-class>atmprocesswebapplication.LoadCashToAtmDatabase</servlet-class>
+ 	</servlet>
+ 	<servlet-mapping>
+ 		<servlet-name>loadcashatm</servlet-name>
+ 		<url-pattern>/load</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	<servlet>
+ 		<servlet-name>showcustomerdetails</servlet-name>
+ 		<servlet-class>atmprocesswebapplication.ShowCustomerDetails</servlet-class>
+ 	</servlet>
+ 	<servlet-mapping>
+ 		<servlet-name>showcustomerdetails</servlet-name>
+ 		<url-pattern>/show</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	<servlet>
+ 		<servlet-name>checkaccountpin</servlet-name>
+ 		<servlet-class>atmprocesswebapplication.ValidateAccountPinNumber</servlet-class>
+ 	</servlet>
+ 	<servlet-mapping>
+ 		<servlet-name>checkaccountpin</servlet-name>
+ 		<url-pattern>/accountpin</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	<servlet>
+ 		<servlet-name>checkbalance</servlet-name>
+ 		<servlet-class>atmprocesswebapplication.CheckBalanceClass</servlet-class>
+ 	</servlet>
+ 	<servlet-mapping>
+ 		<servlet-name>checkbalance</servlet-name>
+ 		<url-pattern>/check</url-pattern>
+ 	</servlet-mapping> 
+ 	
+ 	<servlet>
+ 		<servlet-name>cashwithdraw</servlet-name>
+ 		<servlet-class>atmprocesswebapplication.CashWithdrawalClass</servlet-class>
+ 	</servlet>
+ 	<servlet-mapping>
+ 		<servlet-name>cashwithdraw</servlet-name>
+ 		<url-pattern>/withdraw</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	<servlet>
+ 		<servlet-name>amounttransfer</servlet-name>
+ 		<servlet-class>atmprocesswebapplication.TransferMoneyClass</servlet-class>
+ 	</servlet>
+ 	<servlet-mapping>
+ 		<servlet-name>amounttransfer</servlet-name>
+ 		<url-pattern>/transfer</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	<servlet>
+ 		<servlet-name>ministatement</servlet-name>
+ 		<servlet-class>atmprocesswebapplication.MiniStatementClass</servlet-class>
+ 	</servlet>
+ 	<servlet-mapping>
+ 		<servlet-name>ministatement</servlet-name>
+ 		<url-pattern>/ministate</url-pattern>
+ 	</servlet-mapping>
+ 	
+ 	
+</web-app>
