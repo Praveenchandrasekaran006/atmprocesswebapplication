@@ -16,25 +16,16 @@ public class MiniStatementClass extends HttpServlet
 	{
 		int acc_num = AccountNumber.getAccountNumber();
 		PrintWriter out = null;
-		try(Connection con = ConnectToDatabase.getConnectionObj())
+		try
 		{	
-			out = resp.getWriter();
-			String query = null;
-			if(acc_num == 101)
-				query = "select * from suresh;";
-			else if(acc_num == 102)
-				query = "select * from ganesh;";
-			else if(acc_num == 103)
-				query = "select * from magesh;";
-			else if(acc_num == 104)
-				query = "select * from naresh;";
-			else if(acc_num == 105)
-				query = "select * from harish;";
 			
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(query);
-			out = resp.getWriter();
+			Connection con = ConnectToDatabase.getConnectionObj();
+			PreparedStatement pst = con.prepareStatement("select * from MiniStatement where acc_no = ?;");
 			
+			pst.setInt(1, acc_num);
+			ResultSet rs = pst.executeQuery();
+			
+			out = resp.getWriter();
 			out.println("<html><head>" 
 			        +"<style>" 
 					+"table, th, td {"
@@ -55,6 +46,7 @@ public class MiniStatementClass extends HttpServlet
 			
 			while(rs.next())
 			{
+				int acc_numb = rs.getInt("acc_no");
 				int transaction_id = rs.getInt("transaction_id");
 				String  transaction_remark = rs.getString("transaction_remark");
 				String transaction_type = rs.getString("transaction_type");

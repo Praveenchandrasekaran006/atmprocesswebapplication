@@ -44,32 +44,21 @@ public class TransactionIdClass
 	
 	public static void setTransactionDetailsSender(int sender_acc_num, int receive_acc_num, int amount, int transaction_id)
 	{
-		try(Connection con = ConnectToDatabase.getConnectionObj())
+		try
 		{
-			PreparedStatement pst = con.prepareStatement("select acc_holder from CustomerDetails where acc_no = ?");
-			pst.setInt(1, sender_acc_num);
-			ResultSet rs = pst.executeQuery();
-			rs.next();
-			String acc_holder = rs.getString("acc_holder");
 			
-			if(acc_holder.contentEquals("suresh"))
-				pst = con.prepareStatement("update suresh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("ganesh"))
-				pst = con.prepareStatement("update ganesh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("magesh"))
-				pst = con.prepareStatement("update magesh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("naresh"))
-				pst = con.prepareStatement("update naresh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("harish"))
-				pst = con.prepareStatement("update harish set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-					
+			Connection con = ConnectToDatabase.getConnectionObj();
+			PreparedStatement pst = con.prepareStatement("update MiniStatement set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ? and acc_no = ?;");
+			
 			String remarks = "Fund Transfer to Acc "+receive_acc_num;
 			pst.setString(1, remarks);
 			pst.setString(2, "Debit");
 			pst.setInt(3, amount);
 			pst.setInt(4, transaction_id);
+			pst.setInt(5, sender_acc_num);
 			pst.executeUpdate();
 			pst.close();
+			con.close();
 		}
 		catch(Exception e)
 		{
@@ -80,30 +69,18 @@ public class TransactionIdClass
 	
 	public static void setTransactionDetailsReceiver(int sender_acc_num, int receive_acc_num, int amount, int transaction_id)
 	{
-		try(Connection con = ConnectToDatabase.getConnectionObj())
+		try
 		{
-			PreparedStatement pst = con.prepareStatement("select acc_holder from CustomerDetails where acc_no = ?");
-			pst.setInt(1, receive_acc_num);
-			ResultSet rs = pst.executeQuery();
-			rs.next();
-			String acc_holder = rs.getString("acc_holder");
 			
-			if(acc_holder.contentEquals("suresh"))
-				pst = con.prepareStatement("update suresh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("ganesh"))
-				pst = con.prepareStatement("update ganesh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("magesh"))
-				pst = con.prepareStatement("update magesh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("naresh"))
-				pst = con.prepareStatement("update naresh set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
-			else if(acc_holder.contentEquals("harish"))
-				pst = con.prepareStatement("update harish set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ?;");
+			Connection con = ConnectToDatabase.getConnectionObj();
+			PreparedStatement pst = con.prepareStatement("update MiniStatement set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ? and acc_no = ?;");
 					
 			String remarks = "Fund Transfer from Acc "+sender_acc_num;
 			pst.setString(1, remarks);
 			pst.setString(2, "Credit");
 			pst.setInt(3, amount);
 			pst.setInt(4, transaction_id);
+			pst.setInt(5, receive_acc_num);
 			pst.executeUpdate();
 			pst.close();
 		}
