@@ -1,160 +1,13 @@
+
 package atmprocesswebapplication;
-import java.io.PrintWriter;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import atmprocesswebapplication.ConnectToDatabase;
-import atmprocesswebapplication.ValidateAccountPinNumber;
-
-public class CashWithdrawalClass extends HttpServlet
+public class CashWithdrawalClass extends AbstractCashWithdrawalClass
 {
-	int acc_balance;
-	int atm_total;
-	int hundreds_count;
-	int fivehundreds_count;
-	int thousands_count;
-	
-	int thousands;
-	int hundreds;
-	int five_hundreds;
-	
-	PrintWriter out;
-	Connection con;
-	
-	public void service(HttpServletRequest req, HttpServletResponse resp) 
-	{
-		int acc_num = AccountNumber.getAccountNumber();
-		
-		try
-		{
-			out = resp.getWriter();
-			int amount = Integer.parseInt(req.getParameter("amount"));
-			int output = validateAmount(amount,acc_num);
-						
-			if(output == 1)
-				out.println("Insufficient Amount in Atm");
-			else if(output == 2)
-				out.println("Insufficient Account Balance");
-			else if(output == 4)
-				out.println("Amount allowed for single transaction is 10000 maximum and 100 minimum");
-			else if(output == 0)
-				out.println("<html><body><h1>An error Occured in machine</h1> Your account balance not affected</body></html>");
-			else if(output == 5)
-				out.println("<html><body><h1> Invalid!! </h1> Enter amount in multiples of 10 </body></html>");
-			else
-			{
-				int output_1 = withdrawAmount(amount,acc_num);
-				if(output_1 == 1)
-				{
-					out.println("Hundreds_count = "+hundreds);
-					out.println("five hundreds count = "+five_hundreds);
-					out.println("thousands count = "+thousands);
-					out.println("The account balance is "+acc_balance);
-					out.println("Withdraw Successful The Balance Amount is "+acc_balance);					
-				}
-				else if(output_1 == 2)
-					out.println("<html><body><h1>Insufficient amount in Atm</h1></body></html>");
-				else
-					out.println("<html><body><h1>An error Occured in machine</h1> Your account balance not affected</body></html>");
-			}
-						
-		}
-		catch(NumberFormatException e)
-		{
-			out.println("<html><body><h1> Invalid!! </h1> Please Enter Numbers </body></html>");
-		}
-		catch(Exception e)
-		{
-			out.println("<html><body><h1>An error Occured in machine</h1> Your account balance not affected</body></html>");
-			System.out.println(e);
-		}
-	}
-	
-	
-	public int withdrawAmount(int amount, int acc_num)
-	{
-		
-			int out_logic = cashWithdrawalLogic(acc_num,amount);
-			DBLayerCashWithdrawal.updateAccountAtmDetails(acc_num,acc_balance,thousands_count,fivehundreds_count,hundreds_count,atm_total);
-			
-			return out_logic;
-	}
-	
-	public int cashWithdrawalLogic(int acc_num,int amount)
-	{
-
-		int temp_amount = amount; 
-		hundreds = 0;
-		five_hundreds = 0;
-		thousands = 0;
-		while(amount > 0)
-		{
-			if(amount <= 5000 && amount >= 100)
-			{
-				if(thousands_count != 0 && amount >= 1000 && thousands < 3)
-				{
-					thousands += 1;
-					thousands_count--;
-					amount -= 1000;
-				}
-				while((hundreds_count != 0) && amount >= 100 && hundreds < 10)
-				{
-					hundreds++;
-					--hundreds_count;
-					amount -= 100;
-				}
-				
-				while(amount >= 500 && (fivehundreds_count != 0) && five_hundreds < 6)
-				{
-					five_hundreds++;
-					fivehundreds_count--;
-					amount -= 500;
-				}
-				
-				if(amount < 500 && amount >= 100)
-				{
-					int value = 500-amount;
-					hundreds = hundreds-(value/100);
-					hundreds_count += (value/100);
-					five_hundreds++;
-					fivehundreds_count--;
-					amount = 0;
-				}
-			}
-			else if(amount > 5000)
-			{
-				if(thousands_count >= 3)
-				{
-					thousands +=3;
-					thousands_count-=3;
-					amount -= 3000;
-				}
-				if(fivehundreds_count >=2)
-				{
-					five_hundreds += 2;
-					fivehundreds_count-=2;
-					amount-=1000;
-				}
-			}
-			if(amount == temp_amount)
-				return 2;
-			
-		}
-		
-		atm_total -= temp_amount;
-		acc_balance -= temp_amount;
-		int out = DBLayerCashWithdrawal.updateMiniStatement(acc_num,temp_amount);
-		if(out == 1)
-			return 0;
-		return 1;
-	}
-	
 	public int validateAmount(int amount, int acc_num) 
 	{
 		try
@@ -200,8 +53,62 @@ public class CashWithdrawalClass extends HttpServlet
 		return 0;
 	}
 	
+	public int updateMiniStatement(int acc_num, int amount)
+	{
+		try
+		{		
+			int transaction_id = TransactionIdClass.getTransactionId(acc_num);
+			if(transaction_id == 0)
+				return 1;
+						
+			Connection con = ConnectToDatabase.getConnectionObj();
+			PreparedStatement pst = con.prepareStatement("update MiniStatement set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ? and acc_no = ?;");
+			
+			String remarks = "Debited "+amount+" from ATM";
+			pst.setString(1, remarks);
+			pst.setString(2, "Debit");
+			pst.setInt(3, amount);
+			pst.setInt(4, transaction_id);
+			pst.setInt(5, acc_num);
+			pst.executeUpdate();
+			pst.close();
+			con.close();
+		}
+		catch(Exception e)
+		{
+			System.out.println(e);
+			return 1;
+		}
+		return 0;
+	}
+	
+	public void updateAccountAtmDetails()
+	{
+		try(Connection con = ConnectToDatabase.getConnectionObj())
+		{
+			String query = "truncate table AtmDetails";
+			Statement st = con.createStatement();
+			st.executeUpdate(query);
+			st.close();
+								
+			PreparedStatement pst = con.prepareStatement("update CustomerDetails set acc_balance = ? where acc_no = ?;");
+			pst.setInt(1, acc_balance);
+			pst.setInt(2, acc_num);
+			pst.executeUpdate();
+			pst.close();
+			
+			pst = con.prepareStatement("insert into AtmDetails (hundreds_count, five_hundreds_count, thousands_count, total) values (?,?,?,?)");
+	        pst.setInt(3, thousands_count);
+	        pst.setInt(2, fivehundreds_count);
+	        pst.setInt(1, hundreds_count);
+	        pst.setInt(4, atm_total);
+	        pst.executeUpdate();
+			pst.close();
+			con.close();
+		}
+		catch(Exception e)
+		{
+			System.out.println(e);
+		}
+	}
 }
-
-
-
-

@@ -18,12 +18,12 @@ public class MiniStatementClass extends HttpServlet
 		PrintWriter out = null;
 		try
 		{	
-			
 			Connection con = ConnectToDatabase.getConnectionObj();
 			PreparedStatement pst = con.prepareStatement("select * from MiniStatement where acc_no = ?;");
 			
 			pst.setInt(1, acc_num);
 			ResultSet rs = pst.executeQuery();
+			
 			
 			out = resp.getWriter();
 			out.println("<html><head>" 
@@ -59,6 +59,7 @@ public class MiniStatementClass extends HttpServlet
 						+ "<td>"+transaction_amt+"</td>"
 						+ "</tr>");
 			}
+			con.close();
 		}
 		catch(Exception e)
 		{
@@ -68,10 +69,3 @@ public class MiniStatementClass extends HttpServlet
 		
 	}
 }
-/*
-PreparedStatement pst = con.prepareStatement("select acc_holder from CustomerDetails where acc_no = ?");
-pst.setInt(1, acc_num);
-ResultSet rs = pst.executeQuery();
-rs.next();
-String acc_holder = rs.getString("acc_holder");
-*/
