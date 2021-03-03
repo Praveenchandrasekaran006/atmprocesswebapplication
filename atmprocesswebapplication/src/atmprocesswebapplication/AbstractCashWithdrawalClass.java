@@ -52,10 +52,11 @@ public abstract class AbstractCashWithdrawalClass extends HttpServlet
 				int output_1 = withdrawAmount(amount,acc_num);
 				if(output_1 == 1)
 				{
-					out.println("Hundreds_count = "+hundreds);
-					out.println("five hundreds count = "+five_hundreds);
-					out.println("thousands count = "+thousands);
-					out.println("Withdraw Successful The Balance Amount is "+acc_balance);					
+					out.println("<html><body><h1>Withdraw Successful</h1>"
+					+"Hundreds_count = "+hundreds+"<br>"
+					+"five hundreds count = "+five_hundreds+"<br>"
+					+"thousands count = "+thousands+"<br>"
+					+"The Balance Amount is "+acc_balance+"<br></body></html>");					
 				}
 				else if(output_1 == 2)
 					out.println("<html><body><h1>Insufficient amount in Atm</h1></body></html>");
