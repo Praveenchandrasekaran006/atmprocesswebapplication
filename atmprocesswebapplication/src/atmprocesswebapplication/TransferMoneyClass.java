@@ -20,7 +20,7 @@ public class TransferMoneyClass extends AbstractTransferMoneyClass
 			pst.setInt(1, sender_acc_balance);
 			pst.setInt(2, sender_acc_num);
 			pst.executeUpdate();
-			
+						
 			pst = con.prepareStatement("select acc_balance from CustomerDetails where acc_no = ?;");
 			pst.setInt(1, receive_acc_num);
 			ResultSet rs = pst.executeQuery();
@@ -79,10 +79,12 @@ public class TransferMoneyClass extends AbstractTransferMoneyClass
 		{
 			PreparedStatement pst = con.prepareStatement("select acc_balance from CustomerDetails where acc_no = ?;");
 			pst.setInt(1, account);
+			
 			ResultSet rs = pst.executeQuery();
 			rs.next();
-			sender_acc_balance = rs.getInt("acc_balance");
 			
+			sender_acc_balance = rs.getInt("acc_balance");
+			rs.close();
 			if(amount > 10000 || amount < 1000)
 			{
 				return 2;

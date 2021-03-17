@@ -34,10 +34,11 @@ public class CashWithdrawalClass extends AbstractCashWithdrawalClass
 			pst.close();
 			con.close();
 			
-			if(amount%100 != 0)
-				return 5;
+			
 			if(!(amount <=10000 && amount >=100))
 				return 4;
+			if(amount%100 != 0)
+				return 5;
 			if(amount > atm_total)
 				return 1;
 			if(amount > acc_balance)

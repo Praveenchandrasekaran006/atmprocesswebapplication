@@ -1,4 +1,7 @@
 package atmprocesswebapplication;
+import atmprocesswebapplication.CashWithdrawalData;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,6 +12,10 @@ import java.sql.Statement;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+
 import atmprocesswebapplication.ConnectToDatabase;
 import atmprocesswebapplication.AbstractValidateAccountPinNumber;
 
@@ -27,51 +34,73 @@ public abstract class AbstractCashWithdrawalClass extends HttpServlet
 	PrintWriter out;
 	Connection con;
 	
-	public void service(HttpServletRequest req, HttpServletResponse resp) 
+	public void service(HttpServletRequest req, HttpServletResponse resp) throws IOException 
 	{
 		acc_num = AccountNumber.getAccountNumber();
 		
 		try
 		{
+			resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 			out = resp.getWriter();
-			int amount = Integer.parseInt(req.getParameter("amount"));
+			
+			StringBuffer jb = new StringBuffer();
+			BufferedReader br = req.getReader();
+			String line = null;
+			while((line = br.readLine())!= null)
+				jb.append(line);
+			
+			String line1 = jb.toString();
+			CashWithdrawalJson val = new Gson().fromJson(line1, CashWithdrawalJson.class);
+			int amount = val.amount;
+			
+			System.out.println(amount);
+			
 			int output = validateAmount(amount,acc_num);
 						
 			if(output == 1)
-				out.println("Insufficient Amount in Atm");
+				resp.sendError(100, "Insufficient Amount in ATM");
 			else if(output == 2)
-				out.println("Insufficient Account Balance");
+				resp.sendError(101,"Insufficient Account Balance");
 			else if(output == 4)
-				out.println("Amount allowed for single transaction is 10000 maximum and 100 minimum");
+				resp.sendError(406, "Amount allowed for single transaction is 10000 maximum and 100 minimum");
 			else if(output == 0)
-				out.println("<html><body><h1>An error Occured in machine</h1> Your account balance not affected</body></html>");
+				resp.sendError(500, "An Error Occured in Machine");
 			else if(output == 5)
-				out.println("<html><body><h1> Invalid!! </h1> Enter amount in multiples of 10 </body></html>");
+				resp.sendError(407," Invalid!!  Enter amount in multiples of 10");
 			else
 			{
 				int output_1 = withdrawAmount(amount,acc_num);
 				if(output_1 == 1)
 				{
-					out.println("<html><body><h1>Withdraw Successful</h1>"
-					+"Hundreds_count = "+hundreds+"<br>"
-					+"five hundreds count = "+five_hundreds+"<br>"
-					+"thousands count = "+thousands+"<br>"
-					+"The Balance Amount is "+acc_balance+"<br></body></html>");					
+					CashWithdrawalData cwd = new CashWithdrawalData();
+					cwd.hundreds_count = hundreds;
+					cwd.five_hundreds_count = five_hundreds;
+					cwd.thousands_count = thousands;
+					cwd.acc_balance = acc_balance;
+					
+					Gson obj = new Gson();
+					String json = obj.toJson(cwd);
+					System.out.println(json);
+					
+					resp.setContentType("application/json");
+					resp.setCharacterEncoding("UTF-8");
+				    out.print(json);
+				    out.flush(); 
 				}
 				else if(output_1 == 2)
-					out.println("<html><body><h1>Insufficient amount in Atm</h1></body></html>");
+					resp.sendError(100, "Insufficient Amount in ATM");
 				else
-					out.println("<html><body><h1>An error Occured in machine</h1> Your account balance not affected</body></html>");
+					resp.sendError(500, "An Error Occured in Machine");
 			}
 						
 		}
-		catch(NumberFormatException e)
+		catch(JsonSyntaxException e)
 		{
-			out.println("<html><body><h1> Invalid!! </h1> Please Enter Numbers </body></html>");
+			resp.sendError(402, "Invalid!! Enter Numbers");	
 		}
 		catch(Exception e)
 		{
-			out.println("<html><body><h1>An error Occured in machine</h1> Your account balance not affected</body></html>");
+			resp.sendError(500, "An Error Occured in Machine");
 			System.out.println(e);
 		}
 	}
@@ -88,7 +117,6 @@ public abstract class AbstractCashWithdrawalClass extends HttpServlet
 	
 	public int cashWithdrawalLogic(int acc_num,int amount)
 	{
-
 		int temp_amount = amount; 
 		hundreds = 0;
 		five_hundreds = 0;
@@ -164,5 +192,11 @@ public abstract class AbstractCashWithdrawalClass extends HttpServlet
 }
 
 
-
-
+//out.println("<html><body><h1>Withdraw Successful</h1>"
+//+"Hundreds_count = "+hundreds+"<br>"
+//+"five hundreds count = "+five_hundreds+"<br>"
+//+"thousands count = "+thousands+"<br>"
+//+"The Balance Amount is "+acc_balance+"<br></body></html>");
+//out.println("Invalid!! Please Enter Numbers ");
+//out.println("Insufficient amount in Atm");
+//int amount = Integer.parseInt(req.getParameter("amount"));
