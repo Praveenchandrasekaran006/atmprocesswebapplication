@@ -25,9 +25,17 @@ public class MiniStatementClass extends HttpServlet
 		{	
 			resp.addHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 			Connection con = ConnectToDatabase.getConnectionObj();
-			PreparedStatement pst = con.prepareStatement("select * from MiniStatement where acc_no = ?;");
+			
+			int trans_id = TransactionIdClass.getMiniTransactionId(acc_num);
+			if(trans_id == 0)
+			{
+				resp.sendError(500, "An Error Occured in Machine");
+			}
+			trans_id -=5;
+			PreparedStatement pst = con.prepareStatement("select * from MiniStatement where acc_no = ? and transaction_id > ? order by transaction_id DESC;");
 			
 			pst.setInt(1, acc_num);
+			pst.setInt(2, trans_id);
 			ResultSet rs = pst.executeQuery();
 			
 			
@@ -36,10 +44,10 @@ public class MiniStatementClass extends HttpServlet
 			List<String> json = new ArrayList<String>();
 			Gson obj = new Gson();
 			String ministate = null;
-			
+			int transaction_counter = 0;
 			while(rs.next())
 			{
-				msd.transaction_id = rs.getInt("transaction_id");
+				msd.transaction_id = ++transaction_counter;
 				msd.transaction_remark = rs.getString("transaction_remark");
 				msd.transaction_type = rs.getString("transaction_type");
 				msd.transaction_amt = rs.getInt("transaction_amt");

@@ -63,14 +63,22 @@ public class CashWithdrawalClass extends AbstractCashWithdrawalClass
 				return 1;
 						
 			Connection con = ConnectToDatabase.getConnectionObj();
-			PreparedStatement pst = con.prepareStatement("update MiniStatement set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ? and acc_no = ?;");
-			
+			//PreparedStatement pst = con.prepareStatement("update MiniStatement set transaction_remark = ?, transaction_type = ?, transaction_amt = ? where  transaction_id = ? and acc_no = ?;");
+			PreparedStatement pst = con.prepareStatement("insert into MiniStatement (acc_no, transaction_id, transaction_remark, transaction_type, transaction_amt) values (?,?,?,?,?);");
 			String remarks = "Debited "+amount+" from ATM";
-			pst.setString(1, remarks);
-			pst.setString(2, "Debit");
-			pst.setInt(3, amount);
-			pst.setInt(4, transaction_id);
-			pst.setInt(5, acc_num);
+//			pst.setString(1, remarks);
+//			pst.setString(2, "Debit");
+//			pst.setInt(3, amount);
+//			pst.setInt(4, transaction_id);
+//			pst.setInt(5, acc_num);
+			
+			
+			pst.setInt(1, acc_num);
+			pst.setInt(2, transaction_id);
+			pst.setString(3, remarks);
+			pst.setString(4, "Debit");
+			pst.setInt(5, amount);
+			
 			pst.executeUpdate();
 			pst.close();
 			con.close();
